@@ -1,0 +1,651 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tourze\PayByPaymentBundle\Tests\Command;
+
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
+use PHPUnit\Framework\MockObject\MockObject;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Tester\CommandTester;
+use Tourze\PayByPaymentBundle\Command\PayByConfigCreateCommand;
+use Tourze\PayByPaymentBundle\Entity\PayByConfig;
+use Tourze\PayByPaymentBundle\Service\PayByConfigManager;
+use Tourze\PHPUnitSymfonyKernelTest\AbstractCommandTestCase;
+
+/**
+ * @internal
+ */
+#[CoversClass(PayByConfigCreateCommand::class)]
+#[RunTestsInSeparateProcesses]
+final class PayByConfigCreateCommandTest extends AbstractCommandTestCase
+{
+    private CommandTester $commandTester;
+
+    /** @var PayByConfigManager&MockObject */
+    private PayByConfigManager $configManager;
+
+    protected function onSetUp(): void
+    {
+        /** @var PayByConfigManager&MockObject $configManager */
+        $configManager = $this->createMock(PayByConfigManager::class);
+        $this->configManager = $configManager;
+        self::getContainer()->set(PayByConfigManager::class, $this->configManager);
+
+        /** @var PayByConfigCreateCommand $command */
+        $command = self::getContainer()->get(PayByConfigCreateCommand::class);
+        $this->commandTester = new CommandTester($command);
+    }
+
+    protected function getCommandTester(): CommandTester
+    {
+        return $this->commandTester;
+    }
+
+    public function testCommandCanBeInstantiated(): void
+    {
+        $command = self::getContainer()->get(PayByConfigCreateCommand::class);
+
+        $this->assertInstanceOf(PayByConfigCreateCommand::class, $command);
+    }
+
+    public function testArgumentName(): void
+    {
+        $config = new PayByConfig();
+        $config->setName('test-name-argument');
+        $config->setDescription('');
+        $config->setApiBaseUrl('https://api.test.com');
+        $config->setApiKey('test-key');
+        $config->setApiSecret('test-secret');
+        $config->setMerchantId('test-merchant');
+        $config->setTimeout(30);
+        $config->setRetryAttempts(3);
+        $config->setDefault(false);
+
+        $this->configManager
+            ->expects($this->once())
+            ->method('createConfig')
+            ->willReturn($config)
+        ;
+
+        $exitCode = $this->commandTester->execute([
+            'name' => 'test-name-argument',
+            'apiBaseUrl' => 'https://api.test.com',
+            'apiKey' => 'test-key',
+            'apiSecret' => 'test-secret',
+            'merchantId' => 'test-merchant',
+        ]);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+        $output = $this->commandTester->getDisplay();
+        $this->assertStringContainsString('test-name-argument', $output);
+    }
+
+    public function testArgumentApiBaseUrl(): void
+    {
+        $config = new PayByConfig();
+        $config->setName('test-api-base-url');
+        $config->setDescription('');
+        $config->setApiBaseUrl('https://api.argument.test.com');
+        $config->setApiKey('test-key');
+        $config->setApiSecret('test-secret');
+        $config->setMerchantId('test-merchant');
+        $config->setTimeout(30);
+        $config->setRetryAttempts(3);
+        $config->setDefault(false);
+
+        $this->configManager
+            ->expects($this->once())
+            ->method('createConfig')
+            ->willReturn($config)
+        ;
+
+        $exitCode = $this->commandTester->execute([
+            'name' => 'test-api-base-url',
+            'apiBaseUrl' => 'https://api.argument.test.com',
+            'apiKey' => 'test-key',
+            'apiSecret' => 'test-secret',
+            'merchantId' => 'test-merchant',
+        ]);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+        $output = $this->commandTester->getDisplay();
+        $this->assertStringContainsString('https://api.argument.test.com', $output);
+    }
+
+    public function testArgumentApiKey(): void
+    {
+        $config = new PayByConfig();
+        $config->setName('test-api-key');
+        $config->setDescription('');
+        $config->setApiBaseUrl('https://api.test.com');
+        $config->setApiKey('test-argument-key');
+        $config->setApiSecret('test-secret');
+        $config->setMerchantId('test-merchant');
+        $config->setTimeout(30);
+        $config->setRetryAttempts(3);
+        $config->setDefault(false);
+
+        $this->configManager
+            ->expects($this->once())
+            ->method('createConfig')
+            ->willReturn($config)
+        ;
+
+        $exitCode = $this->commandTester->execute([
+            'name' => 'test-api-key',
+            'apiBaseUrl' => 'https://api.test.com',
+            'apiKey' => 'test-argument-key',
+            'apiSecret' => 'test-secret',
+            'merchantId' => 'test-merchant',
+        ]);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+    }
+
+    public function testArgumentApiSecret(): void
+    {
+        $config = new PayByConfig();
+        $config->setName('test-api-secret');
+        $config->setDescription('');
+        $config->setApiBaseUrl('https://api.test.com');
+        $config->setApiKey('test-key');
+        $config->setApiSecret('test-argument-secret');
+        $config->setMerchantId('test-merchant');
+        $config->setTimeout(30);
+        $config->setRetryAttempts(3);
+        $config->setDefault(false);
+
+        $this->configManager
+            ->expects($this->once())
+            ->method('createConfig')
+            ->willReturn($config)
+        ;
+
+        $exitCode = $this->commandTester->execute([
+            'name' => 'test-api-secret',
+            'apiBaseUrl' => 'https://api.test.com',
+            'apiKey' => 'test-key',
+            'apiSecret' => 'test-argument-secret',
+            'merchantId' => 'test-merchant',
+        ]);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+    }
+
+    public function testArgumentMerchantId(): void
+    {
+        $config = new PayByConfig();
+        $config->setName('test-merchant-id');
+        $config->setDescription('');
+        $config->setApiBaseUrl('https://api.test.com');
+        $config->setApiKey('test-key');
+        $config->setApiSecret('test-secret');
+        $config->setMerchantId('test-argument-merchant');
+        $config->setTimeout(30);
+        $config->setRetryAttempts(3);
+        $config->setDefault(false);
+
+        $this->configManager
+            ->expects($this->once())
+            ->method('createConfig')
+            ->willReturn($config)
+        ;
+
+        $exitCode = $this->commandTester->execute([
+            'name' => 'test-merchant-id',
+            'apiBaseUrl' => 'https://api.test.com',
+            'apiKey' => 'test-key',
+            'apiSecret' => 'test-secret',
+            'merchantId' => 'test-argument-merchant',
+        ]);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+    }
+
+    public function testOptionDescription(): void
+    {
+        $config = new PayByConfig();
+        $config->setName('test-option-desc');
+        $config->setDescription('Test description option');
+        $config->setApiBaseUrl('https://api.test.com');
+        $config->setApiKey('test-key');
+        $config->setApiSecret('test-secret');
+        $config->setMerchantId('test-merchant');
+        $config->setTimeout(30);
+        $config->setRetryAttempts(3);
+        $config->setDefault(false);
+
+        $this->configManager
+            ->expects($this->once())
+            ->method('createConfig')
+            ->willReturn($config)
+        ;
+
+        $exitCode = $this->commandTester->execute([
+            'name' => 'test-option-desc',
+            'apiBaseUrl' => 'https://api.test.com',
+            'apiKey' => 'test-key',
+            'apiSecret' => 'test-secret',
+            'merchantId' => 'test-merchant',
+            '--description' => 'Test description option',
+        ]);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+    }
+
+    public function testOptionTimeout(): void
+    {
+        $config = new PayByConfig();
+        $config->setName('test-option-timeout');
+        $config->setDescription('');
+        $config->setApiBaseUrl('https://api.test.com');
+        $config->setApiKey('test-key');
+        $config->setApiSecret('test-secret');
+        $config->setMerchantId('test-merchant');
+        $config->setTimeout(60);
+        $config->setRetryAttempts(3);
+        $config->setDefault(false);
+
+        $this->configManager
+            ->expects($this->once())
+            ->method('createConfig')
+            ->willReturn($config)
+        ;
+
+        $exitCode = $this->commandTester->execute([
+            'name' => 'test-option-timeout',
+            'apiBaseUrl' => 'https://api.test.com',
+            'apiKey' => 'test-key',
+            'apiSecret' => 'test-secret',
+            'merchantId' => 'test-merchant',
+            '--timeout' => '60',
+        ]);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+    }
+
+    public function testOptionRetryAttempts(): void
+    {
+        $config = new PayByConfig();
+        $config->setName('test-option-retry');
+        $config->setDescription('');
+        $config->setApiBaseUrl('https://api.test.com');
+        $config->setApiKey('test-key');
+        $config->setApiSecret('test-secret');
+        $config->setMerchantId('test-merchant');
+        $config->setTimeout(30);
+        $config->setRetryAttempts(5);
+        $config->setDefault(false);
+
+        $this->configManager
+            ->expects($this->once())
+            ->method('createConfig')
+            ->willReturn($config)
+        ;
+
+        $exitCode = $this->commandTester->execute([
+            'name' => 'test-option-retry',
+            'apiBaseUrl' => 'https://api.test.com',
+            'apiKey' => 'test-key',
+            'apiSecret' => 'test-secret',
+            'merchantId' => 'test-merchant',
+            '--retry-attempts' => '5',
+        ]);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+    }
+
+    public function testOptionDefault(): void
+    {
+        $config = new PayByConfig();
+        $config->setName('test-option-default');
+        $config->setDescription('');
+        $config->setApiBaseUrl('https://api.test.com');
+        $config->setApiKey('test-key');
+        $config->setApiSecret('test-secret');
+        $config->setMerchantId('test-merchant');
+        $config->setTimeout(30);
+        $config->setRetryAttempts(3);
+        $config->setDefault(true);
+
+        $this->configManager
+            ->expects($this->once())
+            ->method('createConfig')
+            ->willReturn($config)
+        ;
+
+        $exitCode = $this->commandTester->execute([
+            'name' => 'test-option-default',
+            'apiBaseUrl' => 'https://api.test.com',
+            'apiKey' => 'test-key',
+            'apiSecret' => 'test-secret',
+            'merchantId' => 'test-merchant',
+            '--default' => true,
+        ]);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+    }
+
+    public function testOptionExtra(): void
+    {
+        $config = new PayByConfig();
+        $config->setName('test-option-extra');
+        $config->setDescription('');
+        $config->setApiBaseUrl('https://api.test.com');
+        $config->setApiKey('test-key');
+        $config->setApiSecret('test-secret');
+        $config->setMerchantId('test-merchant');
+        $config->setTimeout(30);
+        $config->setRetryAttempts(3);
+        $config->setDefault(false);
+        $config->setExtraConfig(['test' => 'value']);
+
+        $this->configManager
+            ->expects($this->once())
+            ->method('createConfig')
+            ->willReturn($config)
+        ;
+
+        $exitCode = $this->commandTester->execute([
+            'name' => 'test-option-extra',
+            'apiBaseUrl' => 'https://api.test.com',
+            'apiKey' => 'test-key',
+            'apiSecret' => 'test-secret',
+            'merchantId' => 'test-merchant',
+            '--extra' => '{"test": "value"}',
+        ]);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+    }
+
+    public function testCreateConfigWithRequiredArguments(): void
+    {
+        $config = new PayByConfig();
+        $config->setName('test-config');
+        $config->setDescription('');
+        $config->setApiBaseUrl('https://api.test.com');
+        $config->setApiKey('test-api-key');
+        $config->setApiSecret('test-api-secret');
+        $config->setMerchantId('test-merchant-123');
+        $config->setTimeout(30);
+        $config->setRetryAttempts(3);
+        $config->setDefault(false);
+
+        $this->configManager
+            ->expects($this->once())
+            ->method('createConfig')
+            ->with([
+                'name' => 'test-config',
+                'description' => '',
+                'apiBaseUrl' => 'https://api.test.com',
+                'apiKey' => 'test-api-key',
+                'apiSecret' => 'test-api-secret',
+                'merchantId' => 'test-merchant-123',
+                'timeout' => 30,
+                'retryAttempts' => 3,
+                'isDefault' => false,
+            ])
+            ->willReturn($config)
+        ;
+
+        $exitCode = $this->commandTester->execute([
+            'name' => 'test-config',
+            'apiBaseUrl' => 'https://api.test.com',
+            'apiKey' => 'test-api-key',
+            'apiSecret' => 'test-api-secret',
+            'merchantId' => 'test-merchant-123',
+        ]);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+
+        $output = $this->commandTester->getDisplay();
+        $this->assertStringContainsString('PayBy 配置创建成功！', $output);
+        $this->assertStringContainsString('test-config', $output);
+        $this->assertStringContainsString('https://api.test.com', $output);
+    }
+
+    public function testCreateConfigWithAllOptions(): void
+    {
+        $config = new PayByConfig();
+        $config->setName('full-config');
+        $config->setDescription('完整配置测试');
+        $config->setApiBaseUrl('https://api.full.com');
+        $config->setApiKey('full-api-key');
+        $config->setApiSecret('full-api-secret');
+        $config->setMerchantId('full-merchant-456');
+        $config->setTimeout(60);
+        $config->setRetryAttempts(5);
+        $config->setDefault(true);
+
+        $this->configManager
+            ->expects($this->once())
+            ->method('createConfig')
+            ->with([
+                'name' => 'full-config',
+                'description' => '完整配置测试',
+                'apiBaseUrl' => 'https://api.full.com',
+                'apiKey' => 'full-api-key',
+                'apiSecret' => 'full-api-secret',
+                'merchantId' => 'full-merchant-456',
+                'timeout' => 60,
+                'retryAttempts' => 5,
+                'isDefault' => true,
+            ])
+            ->willReturn($config)
+        ;
+
+        $exitCode = $this->commandTester->execute([
+            'name' => 'full-config',
+            'apiBaseUrl' => 'https://api.full.com',
+            'apiKey' => 'full-api-key',
+            'apiSecret' => 'full-api-secret',
+            'merchantId' => 'full-merchant-456',
+            '--description' => '完整配置测试',
+            '--timeout' => '60',
+            '--retry-attempts' => '5',
+            '--default' => true,
+        ]);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+    }
+
+    public function testCreateConfigWithValidExtraConfig(): void
+    {
+        $config = new PayByConfig();
+        $config->setName('extra-config');
+        $config->setDescription('');
+        $config->setApiBaseUrl('https://api.extra.com');
+        $config->setApiKey('extra-api-key');
+        $config->setApiSecret('extra-api-secret');
+        $config->setMerchantId('extra-merchant-789');
+        $config->setTimeout(30);
+        $config->setRetryAttempts(3);
+        $config->setDefault(false);
+        $config->setExtraConfig([
+            'webhook_secret' => 'secret123',
+            'environment' => 'test',
+        ]);
+
+        $this->configManager
+            ->expects($this->once())
+            ->method('createConfig')
+            ->with([
+                'name' => 'extra-config',
+                'description' => '',
+                'apiBaseUrl' => 'https://api.extra.com',
+                'apiKey' => 'extra-api-key',
+                'apiSecret' => 'extra-api-secret',
+                'merchantId' => 'extra-merchant-789',
+                'timeout' => 30,
+                'retryAttempts' => 3,
+                'isDefault' => false,
+                'extraConfig' => [
+                    'webhook_secret' => 'secret123',
+                    'environment' => 'test',
+                ],
+            ])
+            ->willReturn($config)
+        ;
+
+        $extraConfig = json_encode([
+            'webhook_secret' => 'secret123',
+            'environment' => 'test',
+        ]);
+
+        $exitCode = $this->commandTester->execute([
+            'name' => 'extra-config',
+            'apiBaseUrl' => 'https://api.extra.com',
+            'apiKey' => 'extra-api-key',
+            'apiSecret' => 'extra-api-secret',
+            'merchantId' => 'extra-merchant-789',
+            '--extra' => $extraConfig,
+        ]);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+    }
+
+    public function testCreateConfigWithInvalidJsonExtraConfig(): void
+    {
+        $this->configManager
+            ->expects($this->never())
+            ->method('createConfig')
+        ;
+
+        $exitCode = $this->commandTester->execute([
+            'name' => 'invalid-json-config',
+            'apiBaseUrl' => 'https://api.invalid.com',
+            'apiKey' => 'invalid-api-key',
+            'apiSecret' => 'test-api-secret',
+            'merchantId' => 'invalid-merchant-000',
+            '--extra' => '{"invalid": json}',
+        ]);
+
+        $this->assertEquals(Command::FAILURE, $exitCode);
+
+        $output = $this->commandTester->getDisplay();
+        $this->assertStringContainsString('额外配置必须是有效的 JSON 格式', $output);
+    }
+
+    public function testCreateConfigWithServiceException(): void
+    {
+        $this->configManager
+            ->expects($this->once())
+            ->method('createConfig')
+            ->willThrowException(new \Exception('数据库连接失败'))
+        ;
+
+        $exitCode = $this->commandTester->execute([
+            'name' => 'exception-config',
+            'apiBaseUrl' => 'https://api.exception.com',
+            'apiKey' => 'exception-api-key',
+            'apiSecret' => 'test-api-secret',
+            'merchantId' => 'exception-merchant-999',
+        ]);
+
+        $this->assertEquals(Command::FAILURE, $exitCode);
+
+        $output = $this->commandTester->getDisplay();
+        $this->assertStringContainsString('创建配置失败：数据库连接失败', $output);
+    }
+
+    public function testCreateConfigOutputsTable(): void
+    {
+        $config = new PayByConfig();
+        $config->setName('table-test');
+        $config->setDescription('表格输出测试');
+        $config->setApiBaseUrl('https://api.table.com');
+        $config->setApiKey('table-api-key');
+        $config->setApiSecret('table-api-secret');
+        $config->setMerchantId('table-merchant-111');
+        $config->setTimeout(45);
+        $config->setRetryAttempts(4);
+        $config->setDefault(false);
+
+        $reflectionProperty = new \ReflectionProperty(PayByConfig::class, 'id');
+        $reflectionProperty->setAccessible(true);
+        $reflectionProperty->setValue($config, 12345);
+
+        $this->configManager
+            ->expects($this->once())
+            ->method('createConfig')
+            ->willReturn($config)
+        ;
+
+        $exitCode = $this->commandTester->execute([
+            'name' => 'table-test',
+            'apiBaseUrl' => 'https://api.table.com',
+            'apiKey' => 'table-api-key',
+            'apiSecret' => 'table-api-secret',
+            'merchantId' => 'table-merchant-111',
+            '--description' => '表格输出测试',
+            '--timeout' => '45',
+            '--retry-attempts' => '4',
+        ]);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+
+        $output = $this->commandTester->getDisplay();
+        $this->assertStringContainsString('属性', $output);
+        $this->assertStringContainsString('值', $output);
+        $this->assertStringContainsString('名称', $output);
+        $this->assertStringContainsString('table-test', $output);
+        $this->assertStringContainsString('描述', $output);
+        $this->assertStringContainsString('表格输出测试', $output);
+        $this->assertStringContainsString('API 地址', $output);
+        $this->assertStringContainsString('https://api.table.com', $output);
+        $this->assertStringContainsString('商户ID', $output);
+        $this->assertStringContainsString('table-merchant-111', $output);
+        $this->assertStringContainsString('超时', $output);
+        $this->assertStringContainsString('45s', $output);
+        $this->assertStringContainsString('重试次数', $output);
+        $this->assertStringContainsString('4', $output);
+        $this->assertStringContainsString('是否默认', $output);
+        $this->assertStringContainsString('否', $output);
+    }
+
+    public function testCreateConfigWithShortOptions(): void
+    {
+        $config = new PayByConfig();
+        $config->setName('short-options');
+        $config->setDescription('短选项测试');
+        $config->setApiBaseUrl('https://api.short.com');
+        $config->setApiKey('short-api-key');
+        $config->setApiSecret('short-api-secret');
+        $config->setMerchantId('short-merchant-222');
+        $config->setTimeout(90);
+        $config->setRetryAttempts(2);
+        $config->setDefault(false);
+
+        $this->configManager
+            ->expects($this->once())
+            ->method('createConfig')
+            ->with([
+                'name' => 'short-options',
+                'description' => '短选项测试',
+                'apiBaseUrl' => 'https://api.short.com',
+                'apiKey' => 'short-api-key',
+                'apiSecret' => 'short-api-secret',
+                'merchantId' => 'short-merchant-222',
+                'timeout' => 90,
+                'retryAttempts' => 2,
+                'isDefault' => false,
+            ])
+            ->willReturn($config)
+        ;
+
+        $exitCode = $this->commandTester->execute([
+            'name' => 'short-options',
+            'apiBaseUrl' => 'https://api.short.com',
+            'apiKey' => 'short-api-key',
+            'apiSecret' => 'short-api-secret',
+            'merchantId' => 'short-merchant-222',
+            '-d' => '短选项测试',
+            '-t' => '90',
+            '-r' => '2',
+        ]);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+    }
+}

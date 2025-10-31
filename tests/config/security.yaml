@@ -1,0 +1,16 @@
+security:
+    providers:
+        in_memory:
+            memory:
+                users: []
+    
+    firewalls:
+        api:
+            pattern: ^/api
+            stateless: true
+            security: false
+        main:
+            lazy: true
+            provider: in_memory
+
+    access_control: []

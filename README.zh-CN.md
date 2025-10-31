@@ -4,7 +4,7 @@
 
 PayBy支付平台集成Bundle，支持订单管理、支付处理、退款和转账功能
 
-## Features
+## 功能特性
 
 - PayBy支付平台集成
 - 订单管理和支付处理
@@ -12,40 +12,40 @@ PayBy支付平台集成Bundle，支持订单管理、支付处理、退款和转
 - 配置管理
 - 数据统计和分析
 
-## Installation
+## 安装
 
 ```bash
 composer require tourze/pay-by-payment-bundle
 ```
 
-## Console Commands
+## 控制台命令
 
-### Configuration Management
+### 配置管理
 
-#### Create PayBy Configuration
+#### 创建PayBy配置
 ```bash
 php bin/console payby:config:create
 ```
 创建新的PayBy支付配置。
 
-#### List PayBy Configurations
+#### 列出PayBy配置
 ```bash
 php bin/console payby:config:list
 ```
 列出所有PayBy支付配置。
 
-## Quick Start
+## 快速开始
 
 ```php
 <?php
 
-// Example code here
+// 示例代码
 ```
 
-## Contributing
+## 贡献
 
-Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+详情请参阅 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
-## License
+## 许可
 
-The MIT License (MIT). Please see [License File](LICENSE) for more information.
+MIT 许可证 (MIT)。详情请参阅 [许可文件](LICENSE)。

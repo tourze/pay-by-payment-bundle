@@ -1,0 +1,9 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: true
+
+  # DataFixtures 服务配置
+  Tourze\PayByPaymentBundle\DataFixtures\:
+    resource: '../../DataFixtures/'

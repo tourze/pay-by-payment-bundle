@@ -1,0 +1,394 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tourze\PayByPaymentBundle\Tests\Command;
+
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Tester\CommandTester;
+use Tourze\PayByPaymentBundle\Command\PayByConfigListCommand;
+use Tourze\PayByPaymentBundle\Entity\PayByConfig;
+use Tourze\PayByPaymentBundle\Service\PayByConfigManager;
+use Tourze\PHPUnitSymfonyKernelTest\AbstractCommandTestCase;
+
+/**
+ * @internal
+ */
+#[CoversClass(PayByConfigListCommand::class)]
+#[RunTestsInSeparateProcesses]
+final class PayByConfigListCommandTest extends AbstractCommandTestCase
+{
+    private CommandTester $commandTester;
+
+    private PayByConfigManager $configManager;
+
+    protected function onSetUp(): void
+    {
+        $this->configManager = $this->createMock(PayByConfigManager::class);
+        self::getContainer()->set(PayByConfigManager::class, $this->configManager);
+
+        /** @var PayByConfigListCommand $command */
+        $command = self::getContainer()->get(PayByConfigListCommand::class);
+        $this->commandTester = new CommandTester($command);
+    }
+
+    protected function getCommandTester(): CommandTester
+    {
+        return $this->commandTester;
+    }
+
+    public function testCommandCanBeInstantiated(): void
+    {
+        $command = self::getContainer()->get(PayByConfigListCommand::class);
+
+        $this->assertInstanceOf(PayByConfigListCommand::class, $command);
+    }
+
+    public function testListConfigsWithData(): void
+    {
+        $config1 = new PayByConfig();
+        $config1->setName('test-config-1')
+            ->setDescription('第一个测试配置')
+            ->setApiBaseUrl('https://api1.test.com')
+            ->setApiKey('test-key-1')
+            ->setApiSecret('test-secret-1')
+            ->setMerchantId('merchant-001')
+            ->setTimeout(30)
+            ->setRetryAttempts(3)
+            ->setEnabled(true)
+            ->setDefault(true)
+        ;
+
+        $config2 = new PayByConfig();
+        $config2->setName('test-config-2')
+            ->setDescription('第二个测试配置')
+            ->setApiBaseUrl('https://api2.test.com')
+            ->setApiKey('test-key-2')
+            ->setApiSecret('test-secret-2')
+            ->setMerchantId('merchant-002')
+            ->setTimeout(60)
+            ->setRetryAttempts(5)
+            ->setEnabled(true)
+            ->setDefault(false)
+        ;
+
+        $this->configManager
+            ->expects($this->once())
+            ->method('getAllEnabledConfigs')
+            ->willReturn([$config1, $config2])
+        ;
+
+        $exitCode = $this->commandTester->execute([]);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+
+        $output = $this->commandTester->getDisplay();
+        $this->assertStringContainsString('PayBy 支付配置列表', $output);
+        $this->assertStringContainsString('共找到 2 个 PayBy 配置', $output);
+
+        $this->assertStringContainsString('test-config-1', $output);
+        $this->assertStringContainsString('第一个测试配置', $output);
+        $this->assertStringContainsString('https://api1.test.com', $output);
+        $this->assertStringContainsString('merchant-001', $output);
+        $this->assertStringContainsString('30s', $output);
+        $this->assertStringContainsString('3', $output);
+        $this->assertStringContainsString('✓', $output);
+
+        $this->assertStringContainsString('test-config-2', $output);
+        $this->assertStringContainsString('第二个测试配置', $output);
+        $this->assertStringContainsString('https://api2.test.com', $output);
+        $this->assertStringContainsString('merchant-002', $output);
+        $this->assertStringContainsString('60s', $output);
+        $this->assertStringContainsString('5', $output);
+        $this->assertStringContainsString('✗', $output);
+    }
+
+    public function testListConfigsOutputFormat(): void
+    {
+        $config = new PayByConfig();
+        $config->setName('format-test')
+            ->setDescription('格式测试')
+            ->setApiBaseUrl('https://api.format.com')
+            ->setApiKey('format-key')
+            ->setApiSecret('format-secret')
+            ->setMerchantId('format-merchant')
+            ->setTimeout(45)
+            ->setRetryAttempts(2)
+            ->setEnabled(true)
+            ->setDefault(false)
+        ;
+
+        $this->configManager
+            ->expects($this->once())
+            ->method('getAllEnabledConfigs')
+            ->willReturn([$config])
+        ;
+
+        $exitCode = $this->commandTester->execute([]);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+
+        $output = $this->commandTester->getDisplay();
+
+        $this->assertStringContainsString('┌─', $output);
+        $this->assertStringContainsString('├─', $output);
+        $this->assertStringContainsString('└─', $output);
+
+        $this->assertStringContainsString('名称', $output);
+        $this->assertStringContainsString('描述', $output);
+        $this->assertStringContainsString('API 地址', $output);
+        $this->assertStringContainsString('商户ID', $output);
+        $this->assertStringContainsString('超时', $output);
+        $this->assertStringContainsString('重试次数', $output);
+        $this->assertStringContainsString('是否默认', $output);
+    }
+
+    public function testListConfigsWhenNoEnabledConfigs(): void
+    {
+        $this->configManager
+            ->expects($this->once())
+            ->method('getAllEnabledConfigs')
+            ->willReturn([])
+        ;
+
+        $exitCode = $this->commandTester->execute([]);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+
+        $output = $this->commandTester->getDisplay();
+        $this->assertStringContainsString('PayBy 支付配置列表', $output);
+        $this->assertStringContainsString('没有找到启用的 PayBy 配置', $output);
+
+        $this->assertStringNotContainsString('共找到', $output);
+    }
+
+    public function testListConfigsWithMixedDefaultStatus(): void
+    {
+        $defaultConfig = new PayByConfig();
+        $defaultConfig->setName('default-config')
+            ->setDescription('默认配置')
+            ->setApiBaseUrl('https://default.test.com')
+            ->setApiKey('default-key')
+            ->setApiSecret('default-secret')
+            ->setMerchantId('default-merchant')
+            ->setTimeout(30)
+            ->setRetryAttempts(3)
+            ->setEnabled(true)
+            ->setDefault(true)
+        ;
+
+        $nonDefaultConfig = new PayByConfig();
+        $nonDefaultConfig->setName('non-default-config')
+            ->setDescription('非默认配置')
+            ->setApiBaseUrl('https://non-default.test.com')
+            ->setApiKey('non-default-key')
+            ->setApiSecret('non-default-secret')
+            ->setMerchantId('non-default-merchant')
+            ->setTimeout(60)
+            ->setRetryAttempts(5)
+            ->setEnabled(true)
+            ->setDefault(false)
+        ;
+
+        $this->configManager
+            ->expects($this->once())
+            ->method('getAllEnabledConfigs')
+            ->willReturn([$defaultConfig, $nonDefaultConfig])
+        ;
+
+        $exitCode = $this->commandTester->execute([]);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+
+        $output = $this->commandTester->getDisplay();
+
+        $lines = explode("\n", $output);
+        $configLines = array_filter($lines, function ($line) {
+            return str_contains($line, 'config');
+        });
+
+        $this->assertNotEmpty($configLines);
+
+        $defaultFound = false;
+        $nonDefaultFound = false;
+
+        foreach ($configLines as $line) {
+            if (str_contains($line, '✓')) {
+                $defaultFound = true;
+            }
+            if (str_contains($line, '✗')) {
+                $nonDefaultFound = true;
+            }
+        }
+
+        $this->assertTrue($defaultFound, '应该有一个默认配置');
+        $this->assertTrue($nonDefaultFound, '应该有一个非默认配置');
+    }
+
+    public function testListConfigsShowsCorrectTimeout(): void
+    {
+        $shortTimeoutConfig = new PayByConfig();
+        $shortTimeoutConfig->setName('short-timeout')
+            ->setDescription('短超时配置')
+            ->setApiBaseUrl('https://short.test.com')
+            ->setApiKey('short-key')
+            ->setApiSecret('short-secret')
+            ->setMerchantId('short-merchant')
+            ->setTimeout(30)
+            ->setRetryAttempts(3)
+            ->setEnabled(true)
+            ->setDefault(false)
+        ;
+
+        $longTimeoutConfig = new PayByConfig();
+        $longTimeoutConfig->setName('long-timeout')
+            ->setDescription('长超时配置')
+            ->setApiBaseUrl('https://long.test.com')
+            ->setApiKey('long-key')
+            ->setApiSecret('long-secret')
+            ->setMerchantId('long-merchant')
+            ->setTimeout(60)
+            ->setRetryAttempts(3)
+            ->setEnabled(true)
+            ->setDefault(false)
+        ;
+
+        $this->configManager
+            ->expects($this->once())
+            ->method('getAllEnabledConfigs')
+            ->willReturn([$shortTimeoutConfig, $longTimeoutConfig])
+        ;
+
+        $exitCode = $this->commandTester->execute([]);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+
+        $output = $this->commandTester->getDisplay();
+
+        $this->assertMatchesRegularExpression('/30s/', $output);
+        $this->assertMatchesRegularExpression('/60s/', $output);
+    }
+
+    public function testListConfigsShowsCorrectRetryAttempts(): void
+    {
+        $lowRetryConfig = new PayByConfig();
+        $lowRetryConfig->setName('low-retry')
+            ->setDescription('低重试配置')
+            ->setApiBaseUrl('https://low.test.com')
+            ->setApiKey('low-key')
+            ->setApiSecret('low-secret')
+            ->setMerchantId('low-merchant')
+            ->setTimeout(30)
+            ->setRetryAttempts(3)
+            ->setEnabled(true)
+            ->setDefault(false)
+        ;
+
+        $highRetryConfig = new PayByConfig();
+        $highRetryConfig->setName('high-retry')
+            ->setDescription('高重试配置')
+            ->setApiBaseUrl('https://high.test.com')
+            ->setApiKey('high-key')
+            ->setApiSecret('high-secret')
+            ->setMerchantId('high-merchant')
+            ->setTimeout(60)
+            ->setRetryAttempts(5)
+            ->setEnabled(true)
+            ->setDefault(false)
+        ;
+
+        $this->configManager
+            ->expects($this->once())
+            ->method('getAllEnabledConfigs')
+            ->willReturn([$lowRetryConfig, $highRetryConfig])
+        ;
+
+        $exitCode = $this->commandTester->execute([]);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+
+        $output = $this->commandTester->getDisplay();
+
+        $this->assertStringContainsString('3', $output);
+        $this->assertStringContainsString('5', $output);
+    }
+
+    public function testListConfigsWithLongDescriptions(): void
+    {
+        $config = new PayByConfig();
+        $config->setName('long-desc-config')
+            ->setDescription('这是一个非常长的描述文本，用来测试表格在处理长文本时的显示效果')
+            ->setApiBaseUrl('https://long.test.com')
+            ->setApiKey('long-key')
+            ->setApiSecret('long-secret')
+            ->setMerchantId('long-merchant')
+            ->setTimeout(120)
+            ->setRetryAttempts(7)
+            ->setEnabled(true)
+            ->setDefault(false)
+        ;
+
+        $this->configManager
+            ->expects($this->once())
+            ->method('getAllEnabledConfigs')
+            ->willReturn([$config])
+        ;
+
+        $exitCode = $this->commandTester->execute([]);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+
+        $output = $this->commandTester->getDisplay();
+        $this->assertStringContainsString('long-desc-config', $output);
+        $this->assertStringContainsString('这是一个非常长的描述文本', $output);
+        $this->assertStringContainsString('共找到 1 个 PayBy 配置', $output);
+    }
+
+    public function testListConfigsWithSingleConfig(): void
+    {
+        $config = new PayByConfig();
+        $config->setName('single-config')
+            ->setDescription('单一配置')
+            ->setApiBaseUrl('https://single.test.com')
+            ->setApiKey('single-key')
+            ->setApiSecret('single-secret')
+            ->setMerchantId('single-merchant')
+            ->setTimeout(45)
+            ->setRetryAttempts(4)
+            ->setEnabled(true)
+            ->setDefault(true)
+        ;
+
+        $this->configManager
+            ->expects($this->once())
+            ->method('getAllEnabledConfigs')
+            ->willReturn([$config])
+        ;
+
+        $exitCode = $this->commandTester->execute([]);
+
+        $this->assertEquals(Command::SUCCESS, $exitCode);
+
+        $output = $this->commandTester->getDisplay();
+        $this->assertStringContainsString('PayBy 支付配置列表', $output);
+        $this->assertStringContainsString('single-config', $output);
+        $this->assertStringContainsString('共找到 1 个 PayBy 配置', $output);
+        $this->assertStringContainsString('✓', $output);
+    }
+
+    public function testListConfigsWithServiceException(): void
+    {
+        $this->configManager
+            ->expects($this->once())
+            ->method('getAllEnabledConfigs')
+            ->willThrowException(new \Exception('数据库连接失败'))
+        ;
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('数据库连接失败');
+
+        $this->commandTester->execute([]);
+    }
+}

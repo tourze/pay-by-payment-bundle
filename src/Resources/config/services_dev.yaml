@@ -1,0 +1,11 @@
+when@dev:
+  services:
+    _defaults:
+      autowire: true
+      autoconfigure: true
+      public: false
+
+    # DataFixtures 服务配置
+    Tourze\PayByPaymentBundle\DataFixtures\:
+      resource: '../../DataFixtures/'
+      tags: ['doctrine.fixture.orm']

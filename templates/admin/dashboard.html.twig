@@ -1,0 +1,65 @@
+{% extends '@!EasyAdmin/layout.html.twig' %}
+
+{% block page_title %}PayBy支付管理{% endblock %}
+
+{% block page_content %}
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">PayBy支付管理仪表盘</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-info elevation-1">
+                                        <i class="fas fa-credit-card"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">今日订单</span>
+                                        <span class="info-box-number">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-success elevation-1">
+                                        <i class="fas fa-dollar-sign"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">今日收入</span>
+                                        <span class="info-box-number">¥0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-warning elevation-1">
+                                        <i class="fas fa-exchange-alt"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">今日转账</span>
+                                        <span class="info-box-number">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box">
+                                    <span class="info-box-icon bg-danger elevation-1">
+                                        <i class="fas fa-undo"></i>
+                                    </span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">今日退款</span>
+                                        <span class="info-box-number">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
