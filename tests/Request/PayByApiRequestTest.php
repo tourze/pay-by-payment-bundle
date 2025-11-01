@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace Tourze\PayByPaymentBundle\Tests\Request;
 
 use HttpClientBundle\Request\RequestInterface;
-use HttpClientBundle\Tests\Request\RequestTestCase;
+use HttpClientBundle\Test\RequestTestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Tourze\PayByPaymentBundle\Request\PayByApiRequest;
 
 /**
