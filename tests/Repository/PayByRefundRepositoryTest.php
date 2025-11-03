@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tourze\PayByPaymentBundle\Tests\Repository;
 
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Tourze\PayByPaymentBundle\Entity\PayByAmount;
@@ -16,6 +17,7 @@ use Tourze\PayByPaymentBundle\Repository\PayByRefundRepository;
 use Tourze\PHPUnitSymfonyKernelTest\AbstractRepositoryTestCase;
 
 /**
+ * @template-extends AbstractRepositoryTestCase<PayByRefund>
  * @internal
  */
 #[CoversClass(PayByRefundRepository::class)]
@@ -43,7 +45,10 @@ class PayByRefundRepositoryTest extends AbstractRepositoryTestCase
         $this->repository->save($refund, true);
     }
 
-    protected function getRepository(): PayByRefundRepository
+    /**
+     * @return PayByRefundRepository
+     */
+    protected function getRepository(): ServiceEntityRepository
     {
         return $this->repository;
     }

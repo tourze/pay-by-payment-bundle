@@ -18,16 +18,9 @@ use Tourze\PHPUnitSymfonyWebTest\AbstractEasyAdminControllerTestCase;
 #[RunTestsInSeparateProcesses]
 class PayByTransferCrudControllerTest extends AbstractEasyAdminControllerTestCase
 {
-    private PayByTransferCrudController $controller;
-
-    protected function onSetUp(): void
-    {
-        $this->controller = new PayByTransferCrudController();
-    }
-
     protected function getControllerService(): PayByTransferCrudController
     {
-        return $this->controller;
+        return new PayByTransferCrudController();
     }
 
     /**

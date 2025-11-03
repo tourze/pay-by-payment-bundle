@@ -18,16 +18,9 @@ use Tourze\PHPUnitSymfonyWebTest\AbstractEasyAdminControllerTestCase;
 #[RunTestsInSeparateProcesses]
 class PayByRefundCrudControllerTest extends AbstractEasyAdminControllerTestCase
 {
-    private PayByRefundCrudController $controller;
-
-    protected function onSetUp(): void
-    {
-        $this->controller = new PayByRefundCrudController();
-    }
-
     protected function getControllerService(): PayByRefundCrudController
     {
-        return $this->controller;
+        return new PayByRefundCrudController();
     }
 
     public static function provideIndexPageHeaders(): iterable
