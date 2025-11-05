@@ -82,7 +82,7 @@ class PayByTransfer
     #[Assert\Type(type: 'array')]
     private ?array $accessoryContent = null;
 
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, name: 'transfer_time', nullable: true, options: ['comment' => '转账时间'])]
+    #[ORM\Column(name: 'transfer_time', type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '转账时间'])]
     #[Assert\Type(type: \DateTimeImmutable::class)]
     private ?\DateTimeImmutable $transferTime = null;
 
@@ -90,7 +90,7 @@ class PayByTransfer
     #[CreateTimeColumn]
     #[IndexColumn]
     #[ORM\Column(name: 'create_time', type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '创建时间'])]
-    private ?\DateTimeImmutable $createTime = null; // @phpstan-ignore-line
+    private ?\DateTimeImmutable $createTime = null;
 
     public function __construct()
     {

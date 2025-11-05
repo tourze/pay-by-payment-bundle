@@ -10,9 +10,6 @@ use Tourze\PayByPaymentBundle\Entity\PayByAmount;
 use Tourze\PayByPaymentBundle\Entity\PayByConfig;
 use Tourze\PayByPaymentBundle\Repository\PayByConfigRepository;
 
-/**
- * @phpstan-ignore missingType.generics
- */
 abstract class AbstractPayByCrudController extends AbstractCrudController
 {
     #[Required]
