@@ -7,7 +7,6 @@ namespace Tourze\PayByPaymentBundle\Controller\Admin;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use Symfony\Contracts\Service\Attribute\Required;
 use Tourze\PayByPaymentBundle\Entity\PayByAmount;
-use Tourze\PayByPaymentBundle\Entity\PayByConfig;
 use Tourze\PayByPaymentBundle\Repository\PayByConfigRepository;
 
 abstract class AbstractPayByCrudController extends AbstractCrudController
