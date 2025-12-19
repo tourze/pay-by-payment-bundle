@@ -12,12 +12,6 @@ class PayByConfigFixtures extends Fixture
 {
     public function load(ObjectManager $manager): void
     {
-        // 在测试环境中不加载Fixtures，避免干扰单元测试
-        $env = $_ENV['APP_ENV'] ?? $_SERVER['APP_ENV'] ?? null;
-        if ('test' === $env) {
-            return;
-        }
-
         $config = new PayByConfig();
         $config->setName('test-config');
         $config->setDescription('测试支付配置');

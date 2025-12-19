@@ -90,7 +90,7 @@ class PayByNotificationControllerTest extends AbstractWebTestCase
 
         $this->assertNotEmpty($attributes);
         $routeAttribute = $attributes[0]->newInstance();
-        $this->assertContains('POST', $routeAttribute->getMethods());
+        $this->assertContains('POST', $routeAttribute->methods);
     }
 
     public function testPostNotificationBusinessLogic(): void
@@ -102,9 +102,9 @@ class PayByNotificationControllerTest extends AbstractWebTestCase
 
         $this->assertNotEmpty($attributes);
         $routeAttribute = $attributes[0]->newInstance();
-        $this->assertEquals('/api/pay-by/notification', $routeAttribute->getPath());
-        $this->assertContains('POST', $routeAttribute->getMethods());
-        $this->assertEquals('pay_by_notification', $routeAttribute->getName());
+        $this->assertEquals('/api/pay-by/notification', $routeAttribute->path);
+        $this->assertContains('POST', $routeAttribute->methods);
+        $this->assertEquals('pay_by_notification', $routeAttribute->name);
     }
 
     #[Test]
@@ -120,7 +120,7 @@ class PayByNotificationControllerTest extends AbstractWebTestCase
 
         $this->assertNotEmpty($attributes);
         $routeAttribute = $attributes[0]->newInstance();
-        $allowedMethods = $routeAttribute->getMethods();
+        $allowedMethods = $routeAttribute->methods;
 
         // Verify that non-POST methods are not allowed
         if ('POST' !== $method) {

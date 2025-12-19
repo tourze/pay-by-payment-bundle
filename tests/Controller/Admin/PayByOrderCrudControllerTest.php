@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace Tourze\PayByPaymentBundle\Tests\Controller\Admin;
 
+use Doctrine\Persistence\ObjectManager;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Tourze\PayByPaymentBundle\Controller\Admin\PayByOrderCrudController;
+use Tourze\PayByPaymentBundle\Entity\PayByConfig;
 use Tourze\PayByPaymentBundle\Entity\PayByOrder;
+use Tourze\PayByPaymentBundle\Enum\PayByOrderStatus;
+use Tourze\PayByPaymentBundle\Enum\PayByPaySceneCode;
 use Tourze\PHPUnitSymfonyWebTest\AbstractEasyAdminControllerTestCase;
 
 /**
@@ -18,6 +22,54 @@ use Tourze\PHPUnitSymfonyWebTest\AbstractEasyAdminControllerTestCase;
 #[RunTestsInSeparateProcesses]
 class PayByOrderCrudControllerTest extends AbstractEasyAdminControllerTestCase
 {
+    protected function afterEasyAdminSetUp(): void
+    {
+        // 确保测试数据存在
+        $container = self::getContainer();
+        /** @var ObjectManager $entityManager */
+        $entityManager = $container->get('doctrine.orm.entity_manager');
+
+        // 检查是否已有订单数据
+        $orderRepository = $entityManager->getRepository(PayByOrder::class);
+        $existingOrders = method_exists($orderRepository, 'count') ? $orderRepository->count() : count($orderRepository->findAll());
+        if (0 === $existingOrders) {
+            // 先创建配置
+            $configRepository = $entityManager->getRepository(PayByConfig::class);
+            $existingConfigs = method_exists($configRepository, 'count') ? $configRepository->count() : count($configRepository->findAll());
+            if (0 === $existingConfigs) {
+                $config = new PayByConfig();
+                $config->setName('test_config');
+                $config->setDescription('Test payment configuration');
+                $config->setApiBaseUrl('https://api.test.payby.com');
+                $config->setApiKey('test_api_key');
+                $config->setApiSecret('test_api_secret');
+                $config->setMerchantId('test_merchant_id');
+                $config->setEnabled(true);
+                $config->setDefault(true);
+
+                $entityManager->persist($config);
+                $entityManager->flush();
+            } else {
+                $config = $configRepository->findOneBy([]);
+            }
+
+            // 创建订单
+            $order = new PayByOrder();
+            $order->setOrderId('TEST_ORDER_001');
+            $order->setMerchantOrderNo('MERCHANT_001');
+            $order->setSubject('Test Order');
+            $order->setBody('Test order description');
+            $order->setAmount('100.00');
+            $order->setCurrency('AED');
+            $order->setPaySceneCode(PayByPaySceneCode::DYNQR);
+            $order->setStatus(PayByOrderStatus::PENDING);
+            $order->setConfig($config);
+
+            $entityManager->persist($order);
+            $entityManager->flush();
+        }
+    }
+
     protected function getControllerService(): PayByOrderCrudController
     {
         return new PayByOrderCrudController();

@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace Tourze\PayByPaymentBundle\Tests\Controller\Admin;
 
+use Doctrine\Persistence\ObjectManager;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Tourze\PayByPaymentBundle\Controller\Admin\PayByTransferCrudController;
+use Tourze\PayByPaymentBundle\Entity\PayByAmount;
 use Tourze\PayByPaymentBundle\Entity\PayByTransfer;
+use Tourze\PayByPaymentBundle\Enum\PayByTransferStatus;
+use Tourze\PayByPaymentBundle\Enum\PayByTransferType;
 use Tourze\PHPUnitSymfonyWebTest\AbstractEasyAdminControllerTestCase;
 
 /**
@@ -18,6 +22,33 @@ use Tourze\PHPUnitSymfonyWebTest\AbstractEasyAdminControllerTestCase;
 #[RunTestsInSeparateProcesses]
 class PayByTransferCrudControllerTest extends AbstractEasyAdminControllerTestCase
 {
+    protected function afterEasyAdminSetUp(): void
+    {
+        // 确保测试数据存在
+        $container = self::getContainer();
+        /** @var ObjectManager $entityManager */
+        $entityManager = $container->get('doctrine.orm.entity_manager');
+
+        // 检查是否已有转账数据
+        $transferRepository = $entityManager->getRepository(PayByTransfer::class);
+        $existingTransfers = method_exists($transferRepository, 'count') ? $transferRepository->count() : count($transferRepository->findAll());
+        if (0 === $existingTransfers) {
+            // 创建转账记录
+            $transfer = new PayByTransfer();
+            $transfer->setTransferId('TEST_TRANSFER_001');
+            $transfer->setMerchantTransferNo('MERCHANT_TRANSFER_001');
+            $transfer->setTransferType(PayByTransferType::INTERNAL);
+            $transfer->setFromAccount('test_from_account');
+            $transfer->setToAccount('test_to_account');
+            $transfer->setTransferAmount(new PayByAmount('100.00', 'AED'));
+            $transfer->setStatus(PayByTransferStatus::PENDING);
+            $transfer->setTransferReason('Test transfer reason');
+
+            $entityManager->persist($transfer);
+            $entityManager->flush();
+        }
+    }
+
     protected function getControllerService(): PayByTransferCrudController
     {
         return new PayByTransferCrudController();

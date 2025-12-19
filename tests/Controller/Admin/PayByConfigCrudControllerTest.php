@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tourze\PayByPaymentBundle\Tests\Controller\Admin;
 
+use Doctrine\Persistence\ObjectManager;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -18,6 +19,35 @@ use Tourze\PHPUnitSymfonyWebTest\AbstractEasyAdminControllerTestCase;
 #[RunTestsInSeparateProcesses]
 class PayByConfigCrudControllerTest extends AbstractEasyAdminControllerTestCase
 {
+    protected function afterEasyAdminSetUp(): void
+    {
+        // 确保测试数据存在
+        $container = self::getContainer();
+        /** @var ObjectManager $entityManager */
+        $entityManager = $container->get('doctrine.orm.entity_manager');
+
+        // 检查是否已有数据，如果没有则创建测试数据
+        $repository = $entityManager->getRepository(PayByConfig::class);
+        $existingConfigs = method_exists($repository, 'count') ? $repository->count() : count($repository->findAll());
+        if (0 === $existingConfigs) {
+            $config = new PayByConfig();
+            $config->setName('test_config');
+            $config->setDescription('Test payment configuration');
+            $config->setApiBaseUrl('https://api.test.payby.com');
+            $config->setApiKey('test_api_key');
+            $config->setApiSecret('test_api_secret');
+            $config->setMerchantId('test_merchant_id');
+            $config->setCallbackUrl('https://example.com/callback');
+            $config->setTimeout(30);
+            $config->setRetryAttempts(3);
+            $config->setEnabled(true);
+            $config->setDefault(true);
+
+            $entityManager->persist($config);
+            $entityManager->flush();
+        }
+    }
+
     protected function getControllerService(): PayByConfigCrudController
     {
         return new PayByConfigCrudController();

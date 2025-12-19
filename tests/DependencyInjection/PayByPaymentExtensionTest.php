@@ -14,7 +14,7 @@ use Tourze\PHPUnitSymfonyUnitTest\AbstractDependencyInjectionExtensionTestCase;
  * @internal
  */
 #[CoversClass(PayByPaymentExtension::class)]
-class PayByPaymentExtensionTest extends AbstractDependencyInjectionExtensionTestCase
+final class PayByPaymentExtensionTest extends AbstractDependencyInjectionExtensionTestCase
 {
     protected function getExtensionClass(): string
     {
